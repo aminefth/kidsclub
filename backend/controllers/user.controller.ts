@@ -15,7 +15,7 @@ import sendMail from "../utils/sendMail";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt";
 import { redis } from "../utils/redis";
 import { deleteUserService, getAllUsersService, getUserById, updateUserRoleService } from "../services/user.service";
-import cloudinary from "cloudinary"
+import imageKit from "../utils/imagekit";
 import BlogModel from '../models/blogs.model';
 import { ObjectId } from "mongoose";
 
@@ -46,6 +46,39 @@ interface IRegistrationBody {
     email: string;
     password: string;
 }
+/**
+ * @swagger
+ * /api/v1/registration:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *                 description: Must contain at least one uppercase, lowercase, number and special character
+ *     responses:
+ *       201:
+ *         description: User registered successfully, activation email sent
+ *       400:
+ *         description: Invalid input or user already exists
+ */
 export const registrationUser = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
 
     try {
@@ -223,7 +256,7 @@ export const logoutUser = catchAsyncErrors(async (req: Request, res: Response, n
     try {
         res.cookie("access_token", "", { maxAge: 1 });
         res.cookie("refresh_token", "", { maxAge: 1 })
-        const userId = req.user?._id;
+        const userId = req.user?._id as string;
         redis.del(userId)
         res.status(200).json({
             success: true,
@@ -259,7 +292,7 @@ export const updateAccessToken = catchAsyncErrors(async (req: Request, res: Resp
         if (!session) {
             return next(new ErrorHandler(message, 400))
         }
-        const user = JSON.parse(session)
+        const user = JSON.parse(session as string)
 
         const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN as string, {
             expiresIn: "5m",
@@ -287,7 +320,7 @@ export const updateAccessToken = catchAsyncErrors(async (req: Request, res: Resp
 export const getUserInfo = catchAsyncErrors(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userId = req.user?._id;
+            const userId = req.user?._id as string;
             getUserById(userId, res, next)
         } catch (error: any) {
             return next(new ErrorHandler(error.message, 400))
@@ -346,55 +379,33 @@ interface IUpdateUserInfo {
     blog: object
 }
 
-// updating user info 
 export const updateUserInfo = catchAsyncErrors(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { name, email, username, phoneNumber, dateOfBirth, country, bio, blog } = req.body as IUpdateUserInfo;
-            const userId = req.user?._id;
+            const userId = req.user?._id as string;
             const user = await userModel.findById(userId);
-            if (email && user) {
+            if (!user) {
+                return next(new ErrorHandler("User not found", 404));
+            }
+
+            if (name) {
+                user.name = name;
+            }
+            if (email) {
                 const isEmailExist = await userModel.findOne({ email });
                 if (isEmailExist) {
                     return next(new ErrorHandler("Email already exist", 400));
                 }
                 user.email = email;
             }
-            if (username && user) {
-                const isUsernameExist = await userModel.findOne({ username });
-                if (isUsernameExist) {
-                    return next(new ErrorHandler("Username already exist", 400));
-                }
-                user.username = username;
-            }
-            if (name && user) {
-                user.name = name;
-            }
-            //TODO:  verifier the varables if the url or the public id
 
-
-            if (phoneNumber && user) {
-                if (phoneNumber.length !== 10) {
-                    return next(new ErrorHandler("Phone number invalid ", 400));
-                }
-                user.phoneNumber = phoneNumber;
-            }
-            if (dateOfBirth && user) {
-                user.dateOfBirth = dateOfBirth;
-            }
-            if (country && user) {
-                user.country = country;
-            }
-
-            // push the new id to blogs ids array 
-            if (bio && user) {
-                if (bio.length > 200) {
-                    return next(new ErrorHandler("Bio must be less than 200 characters", 400))
-                }
+            if (bio) {
                 user.bio = bio;
             }
             await user?.save();
             await redis.set(userId, JSON.stringify(user));
+
             res.status(200).json({
                 success: true,
                 user,
@@ -405,38 +416,37 @@ export const updateUserInfo = catchAsyncErrors(
     }
 );
 
-
-
 // update user password
 interface IUpdatePassword {
-    currentPassword: string;
+    oldPassword: string;
     newPassword: string;
 }
 
 export const updatePassword = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { currentPassword, newPassword } = req.body as IUpdatePassword;
-        if (!currentPassword || !newPassword) { return next(new ErrorHandler("Please enter current password and new password", 400)) }
-        if (currentPassword === newPassword) { return next(new ErrorHandler("Current password and new password cannot be the same", 400)) }
-        if (currentPassword.length < 8 || newPassword.length < 8) { return next(new ErrorHandler("Password must contain at least 8 characters", 400)) }
-        if (passwordRegex.test(newPassword) === false) { return next(new ErrorHandler("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character", 400)) }
+        const { oldPassword, newPassword } = req.body as IUpdatePassword;
 
-        const userId = req.user?._id;
-        const user = await userModel.findById(userId).select("+password ");
-        if (!user) {
-            return next(new ErrorHandler("User not found", 400));
+        if (!oldPassword || !newPassword) {
+            return next(new ErrorHandler("Please enter old and new password", 400));
         }
-        if (user.google_auth === true) {
-            return next(new ErrorHandler("You are not allowed to change password, ", 400));
+
+        const userId = req.user?._id as string;
+        const user = await userModel.findById(userId).select("+password");
+
+        if (user?.password === undefined) {
+            return next(new ErrorHandler("Invalid user", 400));
         }
-        const isMatch = await user.comparePassword(currentPassword);
-        if (!isMatch) {
-            return next(new ErrorHandler("Current password is incorrect", 400));
+
+        const isPasswordMatch = await user?.comparePassword(oldPassword);
+
+        if (!isPasswordMatch) {
+            return next(new ErrorHandler("Invalid old password", 400));
         }
 
         user.password = newPassword;
         await user.save();
         await redis.set(userId, JSON.stringify(user));
+
         res.status(201).json({
             success: true,
             message: "Password updated successfully",
@@ -454,62 +464,41 @@ export const updateAvatar = catchAsyncErrors(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { avatar } = req.body;
-            const userId = req.user?._id;
+            const userId = req.user?._id as string;
             const user = await userModel.findById(userId);
             if (!user) {
                 return next(new ErrorHandler("User not found", 400));
             }
             if (avatar && user) {
-                if (user.avatar?.public_id !== "default") {
-                    // if user have avatar destroy the previous one and upload the new one and the avatar is note the default one provided by my servers random url img picture
-                    await cloudinary.v2.uploader.destroy(user.avatar.public_id);
-
-                    const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+                try {
+                    // Upload new avatar using ImageKit
+                    const uploadResult = await imageKit.uploadFile(avatar, {
+                        fileName: `avatar_${user._id}_${Date.now()}`,
                         folder: "avatars",
-                        use_filename: true,
-                        unique_filename: true, // use unique filenames
-                        overwrite: false, // don't overwrite existing files
-                        resource_type: "image",
-                        type: "upload",
-                        allowed_formats: ["jpg", "png", "jpeg"],
+                        useUniqueFileName: true,
                         transformation: [
                             {
                                 width: 150,
                                 height: 150,
-                                crop: "fill",
-                                quality: "auto", // optimize image quality
-                            },
+                                crop: "force",
+                                quality: 85,
+                                format: "webp"
+                            }
                         ],
+                        tags: ["avatar", "user-profile"]
                     });
 
-                    user.avatar = {
-                        public_id: myCloud.public_id,
-                        url: myCloud.secure_url,
-                    };
-                } else {
-                    // if user don't have avatar upload the new one
-                    const myCloud = await cloudinary.v2.uploader.upload(avatar, {
-                        folder: "avatars",
-                        use_filename: true,
-                        unique_filename: true, // use unique filenames
-                        overwrite: false, // don't overwrite existing files
-                        resource_type: "image",
-                        type: "upload",
-                        allowed_formats: ["jpg", "png", "jpeg"],
-                        transformation: [
-                            {
-                                width: 150,
-                                height: 150,
-                                crop: "fill",
-                                quality: "auto", // optimize image quality
-                            },
-                        ],
-                    });
+                    if (!uploadResult.success) {
+                        return next(new ErrorHandler(uploadResult.error || "Failed to upload avatar", 400));
+                    }
 
+                    // Update user avatar with ImageKit data
                     user.avatar = {
-                        public_id: myCloud.public_id,
-                        url: myCloud.secure_url,
+                        public_id: uploadResult.data!.fileId,
+                        url: uploadResult.data!.url,
                     };
+                } catch (error: any) {
+                    return next(new ErrorHandler(`Avatar upload failed: ${error.message}`, 400));
                 }
             }
             await user.save();

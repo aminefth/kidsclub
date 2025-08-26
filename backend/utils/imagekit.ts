@@ -115,6 +115,16 @@ class ImageKitService {
     }
   }
 
+  /** Check if string is a valid URL */
+  private isValidUrl(string: string): boolean {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /** Validate file before upload */
   private validateFile(file: Buffer | string): { valid: boolean; error?: string; size?: number } {
     if (!file) {
@@ -185,7 +195,7 @@ class ImageKitService {
         console.warn(`Validation failed - ${validation.error}`);
         return { success: false, error: validation.error };
       }
-      const originalSize = validation.size;
+      const originalSize = validation.size || 0;
       const filePayload = Buffer.isBuffer(file) ? file.toString('base64') : file;
       const payload = this.cleanPayload({
         file: filePayload,
@@ -212,7 +222,7 @@ class ImageKitService {
       // Upload to ImageKit
       // Cast to any to handle SDK response type issues
       // Using type assertion to handle SDK response
-      type ImageKitUploadResponse = {
+      interface ImageKitUploadResponse {
         url: string;
         fileId: string;
         name: string;
@@ -223,7 +233,7 @@ class ImageKitService {
         size?: number;
         fileType?: string;
         versionInfo?: any;
-      };
+      }
       
       const response = await this.client.upload(payload as any) as unknown as ImageKitUploadResponse;
       const uploadTime = Date.now() - startTime;
@@ -245,7 +255,7 @@ class ImageKitService {
         metadata: {
           originalSize,
           compressedSize: response.size || 0,
-          compressionRatio: response.size ? Math.round((1 - response.size / originalSize) * 100) : 0,
+          compressionRatio: response.size && originalSize > 0 ? Math.round((1 - response.size / originalSize) * 100) : 0,
           uploadTime,
         },
       };
@@ -290,6 +300,20 @@ class ImageKitService {
         checks: options.checks || `"file.size" < "${PRODUCTION_LIMITS.MAX_FILE_SIZE}"`,
       });
       console.log(`ImageKit: uploading from URL ${url}`);
+      
+      interface ImageKitUploadResponse {
+        url: string;
+        fileId: string;
+        name: string;
+        filePath: string;
+        thumbnailUrl?: string;
+        height?: number;
+        width?: number;
+        size?: number;
+        fileType?: string;
+        versionInfo?: any;
+      }
+      
       const response = await this.client.upload(payload as any) as unknown as ImageKitUploadResponse;
       const uploadTime = Date.now() - startTime;
       return {
@@ -310,6 +334,16 @@ class ImageKitService {
           originalSize: 0,
           compressedSize: response.size || 0,
           compressionRatio: 0,
+          uploadTime,
+        },
+      };
+    } catch (error) {
+      const uploadTime = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      
+      console.error(`Upload from URL failed: ${errorMessage} (${uploadTime}ms)`);
+      
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -346,6 +380,7 @@ class ImageKitService {
       };
     }
   }
+}
 
 // Singleton instance
 let imageKitService: ImageKitService | null = null;

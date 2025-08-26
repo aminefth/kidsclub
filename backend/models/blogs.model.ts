@@ -5,6 +5,16 @@ interface IComment extends Document {
     user: IUser,
     question: string,
     questionReplies: IComment[];
+    reactions: {
+        likes: number,
+        dislikes: number,
+        hearts: number,
+        laughs: number
+    },
+    isModerated: boolean,
+    isFlagged: boolean,
+    parentId: Schema.Types.ObjectId,
+    depth: number,
 }
 
 interface IReview extends Document {
@@ -19,12 +29,14 @@ interface ILink extends Document {
     url: string;
 }
 
-
 interface IActivityBlog extends Document {
     total_likes: number;
     total_comments: number;
     total_reads: number;
     total_parent_comments: number;
+    average_read_time: number;
+    bounce_rate: number;
+    engagement_score: number;
 }
 
 export interface IBlog extends Document {
@@ -39,6 +51,10 @@ export interface IBlog extends Document {
     draft: boolean;
     isPublished: boolean;
 
+    ageGroup?: 'kids-6-8' | 'kids-9-12' | 'kids-13-16' | 'general';
+    isKidsContent: boolean;
+    educationalLevel?: 'beginner' | 'intermediate' | 'advanced';
+    parentalGuidance?: boolean;
 
     questions: IComment[];
     category: string;
@@ -47,6 +63,16 @@ export interface IBlog extends Document {
     reads: number;
     ratings: number;
 
+    viewHistory: Array<{
+        userId?: string;
+        timestamp: Date;
+        sessionId: string;
+        readTime?: number;
+    }>;
+    
+    metaDescription?: string;
+    slug: string;
+    featured: boolean;
 }
 
 // creating Schemas 
@@ -79,12 +105,20 @@ const commentSchema = new Schema<IComment>({
     user: Object,
     question: {
         type: String,
+        required: true,
     },
     questionReplies: [Object],
-})
-
-// blog data
-
+    reactions: {
+        likes: { type: Number, default: 0 },
+        dislikes: { type: Number, default: 0 },
+        hearts: { type: Number, default: 0 },
+        laughs: { type: Number, default: 0 }
+    },
+    isModerated: { type: Boolean, default: false },
+    isFlagged: { type: Boolean, default: false },
+    parentId: { type: Schema.Types.ObjectId, ref: 'Comment' },
+    depth: { type: Number, default: 0 },
+}, { timestamps: true })
 
 // blog Schema
 
@@ -120,6 +154,25 @@ const blogSchema = new Schema<IBlog>({
         type: Boolean,
         default: false,
     },
+    
+    ageGroup: {
+        type: String,
+        enum: ['kids-6-8', 'kids-9-12', 'kids-13-16', 'general'],
+        default: 'general'
+    },
+    isKidsContent: {
+        type: Boolean,
+        default: false
+    },
+    educationalLevel: {
+        type: String,
+        enum: ['beginner', 'intermediate', 'advanced']
+    },
+    parentalGuidance: {
+        type: Boolean,
+        default: false
+    },
+    
     questions: [commentSchema],
     category: {
         type: String,
@@ -141,12 +194,46 @@ const blogSchema = new Schema<IBlog>({
             type: Number,
             default: 0,
         },
+        average_read_time: {
+            type: Number,
+            default: 0
+        },
+        bounce_rate: {
+            type: Number,
+            default: 0
+        },
+        engagement_score: {
+            type: Number,
+            default: 0
+        }
     },
     reviews: [reviewSchema],
     ratings: {
         type: Number,
         default: 0,
+    },
+    
+    viewHistory: [{
+        userId: String,
+        timestamp: { type: Date, default: Date.now },
+        sessionId: String,
+        readTime: Number
+    }],
+    
+    metaDescription: {
+        type: String,
+        maxlength: 160
+    },
+    slug: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    featured: {
+        type: Boolean,
+        default: false
     }
+
 }, {
     timestamps: {
         createdAt: 'published_at',

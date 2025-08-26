@@ -3,7 +3,7 @@ import { redis } from '../utils/redis';
 require("dotenv").config();
 import mongoose, { Document, Model, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 // email regex pattern for validation
 const emailRegexPattern: RegExp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const passwordRegexPattern: RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -222,14 +222,16 @@ const userSchema = new Schema<IUser>({
 
 // sign access token
 userSchema.methods.SignAccessToken = function () {
-    return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN || '', {
+    const secret = process.env.ACCESS_TOKEN || '';
+    return jwt.sign({ id: this._id }, secret, {
         expiresIn: process.env.JWT_EXPIRES_IN_ACCESS_MINUTES || "5m",
     });
 };
 
 // Sign refresh token
 userSchema.methods.SignRefreshToken = function () {
-    return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN || '', {
+    const secret = process.env.REFRESH_TOKEN || '';
+    return jwt.sign({ id: this._id }, secret, {
         expiresIn: process.env.JWT_EXPIRES_IN_REFRESH_MINUTES || "7d",
     });
 }

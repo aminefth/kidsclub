@@ -54,7 +54,7 @@ export const sendToken = (user: IUser, statusCode: number, res: Response) => {
     const refreshToken = user.SignRefreshToken();
 
     // save user session to Redis
-    redis.set(user._id, JSON.stringify(user));
+    redis.set(user._id as string, JSON.stringify(user));
 
     // set secure true in production
     if (process.env.NODE_ENV === "production") {
