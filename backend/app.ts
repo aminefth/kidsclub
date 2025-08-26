@@ -4,7 +4,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import helmet from 'helmet';
 import compression from 'compression';
 import mongoSanitize from 'express-mongo-sanitize';
 import { ErrorMiddleware } from './middlewares/error';
@@ -12,11 +11,31 @@ import { requestLogger } from './middlewares/requestLogger';
 import { apiVersioning } from './middlewares/apiVersioning';
 import routes from './routes';
 import { swaggerSpec } from './config/swagger.config';
+import SecurityManager from './security/SecurityManager';
 
 export const app = express();
 
-// Professional middleware stack
-app.use(helmet());
+// Enhanced security middleware stack
+const securityManager = SecurityManager;
+
+// Enhanced Helmet configuration with strict CSP
+app.use(securityManager.getHelmetConfig());
+
+// Security monitoring and threat detection
+app.use(securityManager.securityMonitor());
+
+// Input sanitization middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.body) {
+    req.body = securityManager.sanitizeInput(req.body);
+  }
+  if (req.query) {
+    req.query = securityManager.sanitizeInput(req.query);
+  }
+  next();
+});
+
+// Standard middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(mongoSanitize());
 app.use(compression());

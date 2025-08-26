@@ -12,7 +12,7 @@ const swaggerDefinition: SwaggerDefinition = {
 A comprehensive content management and social platform designed for family-friendly content with advanced moderation, analytics, and monetization features.
 
 ## Features
-- 🔐 **JWT Authentication** with refresh tokens
+- 🔐 **Enhanced JWT Authentication** with token blacklisting and rotation
 - 👥 **User Management** with role-based access control
 - 📝 **Content Management** with draft/publish workflow
 - 💬 **Comment System** with nested threading and reactions
@@ -21,15 +21,28 @@ A comprehensive content management and social platform designed for family-frien
 - 🔔 **Real-time Notifications** via WebSocket
 - 🖼️ **Image Management** with ImageKit integration
 - 👶 **Kids Safety** with content filtering and moderation
+- 🛡️ **Advanced Security** with comprehensive protection layers
+- 🚦 **Smart Rate Limiting** with endpoint-specific controls
+- 🔍 **Security Monitoring** with real-time threat detection
 
-## Authentication
-Most endpoints require authentication via JWT tokens. Include the token in the Authorization header:
+## Security & Authentication
+Enhanced JWT authentication with multiple security layers:
+- **Token Blacklisting**: Revoked tokens tracked in Redis
+- **Session Validation**: User data cached with validation
+- **Age-Based Access**: Kids Club content filtering
+- **Parental Consent**: COPPA compliance for users under 13
+
+Include the token in the Authorization header:
 \`\`\`
 Authorization: Bearer <your-jwt-token>
 \`\`\`
 
 ## Rate Limiting
-API endpoints are rate-limited to ensure fair usage and system stability.
+Advanced rate limiting with endpoint-specific controls:
+- **Authentication**: 5 requests per 15 minutes
+- **General API**: 100 requests per 15 minutes  
+- **Kids Content**: 50 requests per 10 minutes
+- **File Upload**: 10 requests per hour
 
 ## Error Handling
 All errors follow a consistent format with appropriate HTTP status codes and descriptive messages.
@@ -198,6 +211,10 @@ All errors follow a consistent format with appropriate HTTP status codes and des
     {
       name: 'Admin',
       description: 'Administrative operations (admin only)',
+    },
+    {
+      name: 'Security',
+      description: 'Security management and monitoring endpoints',
     },
   ],
 };

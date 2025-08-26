@@ -52,6 +52,10 @@ router.use('/api/v1', adsRoutes);
 router.use('/api/v1/comments', commentRoutes);
 router.use('/api/v1/analytics', analyticsRoutes);
 
+// Security management routes
+import securityRoutes from './security.route';
+router.use('/api/v1/security', securityRoutes);
+
 // Import Swagger documentation routes for OpenAPI spec
 import swaggerRoutes from './swagger.routes';
 router.use('/', swaggerRoutes);
