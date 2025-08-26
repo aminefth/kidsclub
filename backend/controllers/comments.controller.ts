@@ -263,7 +263,7 @@ export const reactToComment = catchAsyncErrors(
       await comment.save();
 
       // Emit real-time reaction update
-      realtimeService.emitCommentReaction(comment.blogId as string, commentId, {
+      realtimeService.emitCommentReaction(comment.blogId.toString(), commentId, {
         type,
         userId,
         totalReactions: comment.totalReactions

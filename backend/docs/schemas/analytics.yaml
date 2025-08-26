@@ -1,0 +1,455 @@
+components:
+  schemas:
+    # Analytics Model Schemas
+    UserActivity:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f8a1b2c3d4e5f6a7b8c9d0"
+        userId:
+          type: string
+          description: "User who performed the action"
+          example: "64f8a1b2c3d4e5f6a7b8c9d1"
+        sessionId:
+          type: string
+          description: "User session identifier"
+          example: "sess_abc123def456"
+        action:
+          type: string
+          enum: [view, like, comment, share, bookmark, follow, search]
+          description: "Type of action performed"
+          example: "view"
+        resourceType:
+          type: string
+          enum: [blog, user, comment, category]
+          description: "Type of resource acted upon"
+          example: "blog"
+        resourceId:
+          type: string
+          description: "ID of the resource"
+          example: "64f8a1b2c3d4e5f6a7b8c9d2"
+        metadata:
+          type: object
+          properties:
+            readTime:
+              type: number
+              description: "Time spent reading (seconds)"
+              example: 180
+            scrollDepth:
+              type: number
+              description: "Scroll depth percentage"
+              example: 85.5
+            searchQuery:
+              type: string
+              description: "Search query if applicable"
+              example: "nodejs tutorial"
+            referrer:
+              type: string
+              description: "Referrer URL"
+              example: "https://google.com"
+            userAgent:
+              type: string
+              description: "User agent string"
+              example: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            location:
+              type: object
+              properties:
+                country:
+                  type: string
+                  example: "United States"
+                city:
+                  type: string
+                  example: "New York"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-08-26T21:50:13.608Z"
+
+    ArticleAnalytics:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f8a1b2c3d4e5f6a7b8c9d0"
+        blogId:
+          type: string
+          description: "Blog article ID"
+          example: "64f8a1b2c3d4e5f6a7b8c9d1"
+        date:
+          type: string
+          format: date
+          description: "Analytics date"
+          example: "2025-08-26"
+        views:
+          type: integer
+          description: "Total views"
+          example: 1250
+        uniqueViews:
+          type: integer
+          description: "Unique views"
+          example: 980
+        averageReadTime:
+          type: number
+          description: "Average read time in seconds"
+          example: 245.5
+        bounceRate:
+          type: number
+          description: "Bounce rate percentage"
+          example: 35.2
+        engagementScore:
+          type: number
+          description: "Engagement score (0-100)"
+          example: 78.5
+        comments:
+          type: integer
+          description: "Number of comments"
+          example: 25
+        likes:
+          type: integer
+          description: "Number of likes"
+          example: 150
+        shares:
+          type: integer
+          description: "Number of shares"
+          example: 45
+        bookmarks:
+          type: integer
+          description: "Number of bookmarks"
+          example: 89
+
+    PlatformAnalytics:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f8a1b2c3d4e5f6a7b8c9d0"
+        date:
+          type: string
+          format: date
+          description: "Analytics date"
+          example: "2025-08-26"
+        activeUsers:
+          type: integer
+          description: "Daily active users"
+          example: 2500
+        newUsers:
+          type: integer
+          description: "New user registrations"
+          example: 150
+        totalSessions:
+          type: integer
+          description: "Total user sessions"
+          example: 3200
+        averageSessionDuration:
+          type: number
+          description: "Average session duration in seconds"
+          example: 420.5
+        pageViews:
+          type: integer
+          description: "Total page views"
+          example: 15000
+        uniquePageViews:
+          type: integer
+          description: "Unique page views"
+          example: 12000
+        bounceRate:
+          type: number
+          description: "Platform bounce rate percentage"
+          example: 28.5
+        conversionRate:
+          type: number
+          description: "Conversion rate percentage"
+          example: 12.8
+        revenue:
+          type: number
+          description: "Daily revenue"
+          example: 1250.75
+        adImpressions:
+          type: integer
+          description: "Ad impressions"
+          example: 50000
+        adClicks:
+          type: integer
+          description: "Ad clicks"
+          example: 1500
+        adRevenue:
+          type: number
+          description: "Ad revenue"
+          example: 750.25
+        premiumSubscriptions:
+          type: integer
+          description: "Premium subscriptions"
+          example: 25
+
+    # Analytics Request Schemas
+    AnalyticsQuery:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: "Start date for analytics"
+          example: "2025-08-01"
+        endDate:
+          type: string
+          format: date
+          description: "End date for analytics"
+          example: "2025-08-31"
+        granularity:
+          type: string
+          enum: [hour, day, week, month]
+          default: "day"
+          description: "Data granularity"
+          example: "day"
+        metrics:
+          type: array
+          items:
+            type: string
+            enum: [views, users, sessions, revenue, engagement, conversion]
+          description: "Specific metrics to include"
+          example: ["views", "users", "revenue"]
+        filters:
+          type: object
+          properties:
+            country:
+              type: string
+              example: "United States"
+            category:
+              type: string
+              example: "Technology"
+            userType:
+              type: string
+              enum: [all, new, returning, premium]
+              example: "all"
+
+    TrackEventRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [view, like, comment, share, bookmark, follow, search]
+          description: "Action type"
+          example: "view"
+        resourceType:
+          type: string
+          enum: [blog, user, comment, category]
+          description: "Resource type"
+          example: "blog"
+        resourceId:
+          type: string
+          description: "Resource ID"
+          example: "64f8a1b2c3d4e5f6a7b8c9d1"
+        metadata:
+          type: object
+          description: "Additional event metadata"
+          example: { "readTime": 180, "scrollDepth": 85.5 }
+      required:
+        - action
+        - resourceType
+        - resourceId
+
+    # Analytics Response Schemas
+    AnalyticsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    totalViews:
+                      type: integer
+                      example: 125000
+                    totalUsers:
+                      type: integer
+                      example: 8500
+                    totalRevenue:
+                      type: number
+                      example: 15750.25
+                    averageEngagement:
+                      type: number
+                      example: 68.5
+                    growthRate:
+                      type: number
+                      description: "Growth rate percentage"
+                      example: 12.5
+                timeSeries:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: "2025-08-26"
+                      views:
+                        type: integer
+                        example: 1250
+                      users:
+                        type: integer
+                        example: 450
+                      revenue:
+                        type: number
+                        example: 125.50
+                      engagement:
+                        type: number
+                        example: 72.3
+                topContent:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64f8a1b2c3d4e5f6a7b8c9d1"
+                      title:
+                        type: string
+                        example: "Getting Started with Node.js"
+                      views:
+                        type: integer
+                        example: 2500
+                      engagement:
+                        type: number
+                        example: 85.2
+                      revenue:
+                        type: number
+                        example: 250.75
+
+    UserAnalyticsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "64f8a1b2c3d4e5f6a7b8c9d0"
+                summary:
+                  type: object
+                  properties:
+                    totalViews:
+                      type: integer
+                      example: 15000
+                    totalLikes:
+                      type: integer
+                      example: 850
+                    totalComments:
+                      type: integer
+                      example: 120
+                    totalShares:
+                      type: integer
+                      example: 45
+                    averageReadTime:
+                      type: number
+                      example: 285.5
+                    engagementRate:
+                      type: number
+                      example: 78.2
+                activityTimeline:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserActivity'
+                topContent:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      blogId:
+                        type: string
+                        example: "64f8a1b2c3d4e5f6a7b8c9d1"
+                      title:
+                        type: string
+                        example: "My Popular Article"
+                      views:
+                        type: integer
+                        example: 2500
+                      likes:
+                        type: integer
+                        example: 180
+                      comments:
+                        type: integer
+                        example: 25
+
+    RevenueAnalyticsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    totalRevenue:
+                      type: number
+                      example: 25750.50
+                    adRevenue:
+                      type: number
+                      example: 18500.25
+                    subscriptionRevenue:
+                      type: number
+                      example: 7250.25
+                    averageRPU:
+                      type: number
+                      description: "Revenue per user"
+                      example: 12.75
+                    conversionRate:
+                      type: number
+                      example: 8.5
+                breakdown:
+                  type: object
+                  properties:
+                    bySource:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          source:
+                            type: string
+                            enum: [adsense, sponsored, premium, affiliate]
+                            example: "adsense"
+                          revenue:
+                            type: number
+                            example: 12500.75
+                          percentage:
+                            type: number
+                            example: 48.5
+                    byCategory:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          category:
+                            type: string
+                            example: "Technology"
+                          revenue:
+                            type: number
+                            example: 8750.25
+                          percentage:
+                            type: number
+                            example: 34.0
+                trends:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        example: "2025-08-26"
+                      totalRevenue:
+                        type: number
+                        example: 850.25
+                      adRevenue:
+                        type: number
+                        example: 620.50
+                      subscriptionRevenue:
+                        type: number
+                        example: 229.75

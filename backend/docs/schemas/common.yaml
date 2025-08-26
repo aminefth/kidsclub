@@ -1,0 +1,335 @@
+components:
+  schemas:
+    # Common Response Schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully"
+        data:
+          type: object
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "An error occurred"
+        error:
+          type: string
+          example: "ERROR_CODE"
+        details:
+          type: array
+          items:
+            type: object
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - message
+
+    ResponseMeta:
+      type: object
+      properties:
+        responseTime:
+          type: number
+          description: "Response time in milliseconds"
+          example: 150
+        requestId:
+          type: string
+          description: "Unique request identifier"
+          example: "c502cb80-1098-4b74-bac1-accaf7395eb3"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-08-26T21:50:13.608Z"
+        apiVersion:
+          type: string
+          example: "1"
+
+    # Pagination Schemas
+    PaginationQuery:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+          description: "Page number"
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          description: "Number of items per page"
+        sort:
+          type: string
+          description: "Sort field and direction (e.g., 'createdAt:desc')"
+          example: "createdAt:desc"
+        search:
+          type: string
+          description: "Search query"
+
+    PaginationMeta:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 10
+        totalItems:
+          type: integer
+          example: 200
+        itemsPerPage:
+          type: integer
+          example: 20
+        hasNextPage:
+          type: boolean
+          example: true
+        hasPreviousPage:
+          type: boolean
+          example: false
+
+    PaginatedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items: {}
+                pagination:
+                  $ref: '#/components/schemas/PaginationMeta'
+
+    # User Related Schemas
+    UserRole:
+      type: string
+      enum: [user, author, moderator, admin]
+      description: "User role in the system"
+
+    UserStatus:
+      type: string
+      enum: [pending, active, suspended, banned]
+      description: "User account status"
+
+    Avatar:
+      type: object
+      properties:
+        public_id:
+          type: string
+          description: "ImageKit public ID"
+          example: "avatars/user123_abc456"
+        url:
+          type: string
+          format: uri
+          description: "Avatar image URL"
+          example: "https://ik.imagekit.io/kidsclub/avatars/user123_abc456.jpg"
+
+    SocialLinks:
+      type: object
+      properties:
+        twitter:
+          type: string
+          format: uri
+          example: "https://twitter.com/username"
+        linkedin:
+          type: string
+          format: uri
+          example: "https://linkedin.com/in/username"
+        github:
+          type: string
+          format: uri
+          example: "https://github.com/username"
+        website:
+          type: string
+          format: uri
+          example: "https://example.com"
+
+    # Content Related Schemas
+    ContentStatus:
+      type: string
+      enum: [draft, published, archived, deleted]
+      description: "Content publication status"
+
+    Reactions:
+      type: object
+      properties:
+        likes:
+          type: array
+          items:
+            type: string
+          description: "Array of user IDs who liked"
+        dislikes:
+          type: array
+          items:
+            type: string
+          description: "Array of user IDs who disliked"
+        hearts:
+          type: array
+          items:
+            type: string
+          description: "Array of user IDs who hearted"
+        laughs:
+          type: array
+          items:
+            type: string
+          description: "Array of user IDs who laughed"
+
+    # File Upload Schemas
+    FileUpload:
+      type: object
+      properties:
+        fieldname:
+          type: string
+          example: "avatar"
+        originalname:
+          type: string
+          example: "profile.jpg"
+        encoding:
+          type: string
+          example: "7bit"
+        mimetype:
+          type: string
+          example: "image/jpeg"
+        size:
+          type: integer
+          example: 1024000
+        buffer:
+          type: string
+          format: binary
+
+    UploadResponse:
+      type: object
+      properties:
+        public_id:
+          type: string
+          example: "uploads/file123_abc456"
+        url:
+          type: string
+          format: uri
+          example: "https://ik.imagekit.io/kidsclub/uploads/file123_abc456.jpg"
+        secure_url:
+          type: string
+          format: uri
+          example: "https://ik.imagekit.io/kidsclub/uploads/file123_abc456.jpg"
+        format:
+          type: string
+          example: "jpg"
+        width:
+          type: integer
+          example: 800
+        height:
+          type: integer
+          example: 600
+        bytes:
+          type: integer
+          example: 1024000
+
+    # Health Check Schema
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy, degraded]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-08-26T21:50:13.608Z"
+        uptime:
+          type: number
+          description: "Server uptime in seconds"
+          example: 29.279138574
+        version:
+          type: string
+          example: "1.0.0"
+        environment:
+          type: string
+          enum: [development, staging, production]
+          example: "development"
+        services:
+          type: object
+          properties:
+            database:
+              $ref: '#/components/schemas/ServiceHealth'
+            redis:
+              $ref: '#/components/schemas/ServiceHealth'
+            imagekit:
+              $ref: '#/components/schemas/ServiceHealth'
+        system:
+          type: object
+          properties:
+            memory:
+              type: object
+              properties:
+                used:
+                  type: integer
+                  example: 11260256256
+                free:
+                  type: integer
+                  example: 5241806848
+                total:
+                  type: integer
+                  example: 16502063104
+                percentage:
+                  type: number
+                  example: 68
+            cpu:
+              type: object
+              properties:
+                loadAverage:
+                  type: array
+                  items:
+                    type: number
+                  example: [3.62, 3.31, 2.82]
+                cores:
+                  type: integer
+                  example: 8
+        performance:
+          type: object
+          properties:
+            averageResponseTime:
+              type: number
+              example: 150
+            requestsPerSecond:
+              type: number
+              example: 10
+            errorRate:
+              type: number
+              example: 0.01
+
+    ServiceHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [up, down, degraded]
+          example: "up"
+        responseTime:
+          type: number
+          description: "Response time in milliseconds"
+          example: 95
+        message:
+          type: string
+          example: "Service is healthy"
+        lastChecked:
+          type: string
+          format: date-time
+          example: "2025-08-26T21:50:13.110Z"

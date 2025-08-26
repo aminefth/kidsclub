@@ -27,10 +27,10 @@ class NotificationService {
       }
 
       // Send real-time notification
-      realtimeService.emitNotification(notification.recipient as string, notification);
+      realtimeService.emitNotification(notification.recipient.toString(), notification);
 
       // Update user's unread notification count
-      await this.updateUnreadCount(notification.recipient as string);
+      await this.updateUnreadCount(notification.recipient.toString());
 
       // Cache notification for quick access
       await this.cacheNotification(notification);

@@ -1,8 +1,7 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface INotification extends Document {
-    _id: string;
-    recipient: string;
+    recipient: mongoose.Types.ObjectId;
     sender?: string;
     type: 'like' | 'comment' | 'follow' | 'mention' | 'blog_published' | 'system';
     title: string;

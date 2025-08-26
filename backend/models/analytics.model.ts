@@ -2,7 +2,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 
 // User Activity Tracking
 export interface IUserActivity extends Document {
-    userId: string;
+    userId: mongoose.Types.ObjectId;
     sessionId: string;
     action: 'view' | 'like' | 'comment' | 'share' | 'bookmark' | 'follow' | 'search';
     resourceType: 'blog' | 'user' | 'comment' | 'category';
@@ -23,7 +23,7 @@ export interface IUserActivity extends Document {
 
 // Article Performance Analytics
 export interface IArticleAnalytics extends Document {
-    blogId: string;
+    blogId: mongoose.Types.ObjectId;
     date: Date;
     views: number;
     uniqueViews: number;

@@ -1,0 +1,419 @@
+components:
+  schemas:
+    # Blog Model Schemas
+    Blog:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: "Unique blog identifier"
+          example: "64f8a1b2c3d4e5f6a7b8c9d0"
+        blog_id:
+          type: string
+          description: "Human-readable blog ID"
+          example: "getting-started-with-nodejs-2025"
+        title:
+          type: string
+          minLength: 5
+          maxLength: 200
+          description: "Blog title"
+          example: "Getting Started with Node.js in 2025"
+        description:
+          type: string
+          maxLength: 500
+          description: "Blog description/excerpt"
+          example: "A comprehensive guide to starting your Node.js journey"
+        content:
+          type: string
+          description: "Blog content in markdown format"
+          example: "# Introduction\n\nNode.js is a powerful runtime..."
+        banner:
+          $ref: '#/components/schemas/Avatar'
+        tags:
+          type: array
+          items:
+            type: string
+          description: "Blog tags"
+          example: ["nodejs", "javascript", "tutorial", "beginner"]
+        category:
+          type: string
+          description: "Blog category"
+          example: "Technology"
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "64f8a1b2c3d4e5f6a7b8c9d0"
+            name:
+              type: string
+              example: "John Doe"
+            avatar:
+              $ref: '#/components/schemas/Avatar'
+            isVerified:
+              type: boolean
+              example: true
+        draft:
+          type: boolean
+          description: "Draft status"
+          example: false
+        isPublished:
+          type: boolean
+          description: "Publication status"
+          example: true
+        publishedAt:
+          type: string
+          format: date-time
+          description: "Publication timestamp"
+          example: "2025-08-26T21:50:13.608Z"
+        
+        # Kids Safety
+        isKidsSafe:
+          type: boolean
+          description: "Content is safe for children"
+          example: true
+        ageRating:
+          type: string
+          enum: [all, 6+, 12+, 16+, 18+]
+          description: "Age rating for content"
+          example: "all"
+        
+        # Analytics
+        activity:
+          type: object
+          properties:
+            total_likes:
+              type: integer
+              example: 42
+            total_comments:
+              type: integer
+              example: 15
+            total_reads:
+              type: integer
+              example: 1250
+            total_parent_comments:
+              type: integer
+              example: 12
+        
+        # Reviews/Comments
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogReview'
+        
+        createdAt:
+          type: string
+          format: date-time
+          description: "Creation timestamp"
+          example: "2025-08-26T20:30:13.608Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: "Last update timestamp"
+          example: "2025-08-26T21:50:13.608Z"
+      required:
+        - _id
+        - blog_id
+        - title
+        - content
+        - author
+        - draft
+        - isPublished
+
+    BlogReview:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f8a1b2c3d4e5f6a7b8c9d1"
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "64f8a1b2c3d4e5f6a7b8c9d0"
+            name:
+              type: string
+              example: "Jane Smith"
+            avatar:
+              $ref: '#/components/schemas/Avatar'
+        comment:
+          type: string
+          maxLength: 1000
+          description: "Review comment"
+          example: "Great article! Very helpful for beginners."
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "Rating out of 5"
+          example: 5
+        commentReplies:
+          type: array
+          items:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "64f8a1b2c3d4e5f6a7b8c9d0"
+              comment:
+                type: string
+                example: "Thank you for the feedback!"
+              createdAt:
+                type: string
+                format: date-time
+                example: "2025-08-26T21:55:13.608Z"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-08-26T21:50:13.608Z"
+
+    # Blog Request Schemas
+    CreateBlogRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 200
+          description: "Blog title"
+          example: "Getting Started with Node.js in 2025"
+        description:
+          type: string
+          maxLength: 500
+          description: "Blog description/excerpt"
+          example: "A comprehensive guide to starting your Node.js journey"
+        content:
+          type: string
+          minLength: 100
+          description: "Blog content in markdown format"
+          example: "# Introduction\n\nNode.js is a powerful runtime..."
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 10
+          description: "Blog tags"
+          example: ["nodejs", "javascript", "tutorial", "beginner"]
+        category:
+          type: string
+          description: "Blog category"
+          example: "Technology"
+        draft:
+          type: boolean
+          default: true
+          description: "Save as draft"
+          example: false
+        isKidsSafe:
+          type: boolean
+          default: true
+          description: "Content is safe for children"
+          example: true
+        ageRating:
+          type: string
+          enum: [all, 6+, 12+, 16+, 18+]
+          default: "all"
+          description: "Age rating for content"
+          example: "all"
+      required:
+        - title
+        - content
+        - tags
+        - category
+
+    UpdateBlogRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 5
+          maxLength: 200
+          description: "Blog title"
+          example: "Getting Started with Node.js in 2025 - Updated"
+        description:
+          type: string
+          maxLength: 500
+          description: "Blog description/excerpt"
+          example: "An updated comprehensive guide to starting your Node.js journey"
+        content:
+          type: string
+          minLength: 100
+          description: "Blog content in markdown format"
+          example: "# Introduction\n\nNode.js is a powerful runtime..."
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 10
+          description: "Blog tags"
+          example: ["nodejs", "javascript", "tutorial", "beginner", "2025"]
+        category:
+          type: string
+          description: "Blog category"
+          example: "Technology"
+        draft:
+          type: boolean
+          description: "Draft status"
+          example: false
+        isKidsSafe:
+          type: boolean
+          description: "Content is safe for children"
+          example: true
+        ageRating:
+          type: string
+          enum: [all, 6+, 12+, 16+, 18+]
+          description: "Age rating for content"
+          example: "all"
+
+    AddReviewRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          description: "Review comment"
+          example: "Great article! Very helpful for beginners."
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "Rating out of 5"
+          example: 5
+      required:
+        - comment
+        - rating
+
+    ReplyToReviewRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+          minLength: 5
+          maxLength: 500
+          description: "Reply comment"
+          example: "Thank you for the feedback!"
+      required:
+        - comment
+
+    # Blog Response Schemas
+    BlogResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Blog'
+
+    BlogsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Blog'
+
+    BlogStatsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalBlogs:
+                  type: integer
+                  example: 150
+                publishedBlogs:
+                  type: integer
+                  example: 120
+                draftBlogs:
+                  type: integer
+                  example: 30
+                totalViews:
+                  type: integer
+                  example: 25000
+                totalLikes:
+                  type: integer
+                  example: 1500
+                totalComments:
+                  type: integer
+                  example: 800
+                averageRating:
+                  type: number
+                  example: 4.2
+                topCategories:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      category:
+                        type: string
+                        example: "Technology"
+                      count:
+                        type: integer
+                        example: 45
+                topTags:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tag:
+                        type: string
+                        example: "javascript"
+                      count:
+                        type: integer
+                        example: 25
+
+    # Blog Search and Filter
+    BlogSearchQuery:
+      allOf:
+        - $ref: '#/components/schemas/PaginationQuery'
+        - type: object
+          properties:
+            category:
+              type: string
+              description: "Filter by category"
+              example: "Technology"
+            tags:
+              type: array
+              items:
+                type: string
+              description: "Filter by tags"
+              example: ["nodejs", "javascript"]
+            author:
+              type: string
+              description: "Filter by author ID"
+              example: "64f8a1b2c3d4e5f6a7b8c9d0"
+            isKidsSafe:
+              type: boolean
+              description: "Filter by kids safety"
+              example: true
+            ageRating:
+              type: string
+              enum: [all, 6+, 12+, 16+, 18+]
+              description: "Filter by age rating"
+              example: "all"
+            dateFrom:
+              type: string
+              format: date
+              description: "Filter from date"
+              example: "2025-01-01"
+            dateTo:
+              type: string
+              format: date
+              description: "Filter to date"
+              example: "2025-12-31"
+            minRating:
+              type: number
+              minimum: 1
+              maximum: 5
+              description: "Minimum average rating"
+              example: 4.0

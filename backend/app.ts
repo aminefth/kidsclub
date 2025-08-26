@@ -1,24 +1,19 @@
-import { userModel } from './models/user.model';
 // Professional Express.js application setup
 require("dotenv").config();
-import express, { NextFunction, Request, Response } from 'express';
-export const app = express();
-import { ErrorMiddleware } from './middlewares/error';
-import { requestLogger, errorLogger } from './middlewares/requestLogger';
-import { apiVersioning } from './middlewares/apiVersioning';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
 import helmet from 'helmet';
-import morgan from 'morgan';
-import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
-import imageKit from './utils/imagekit';
-import { setupSwagger } from './config/swagger';
+import mongoSanitize from 'express-mongo-sanitize';
+import { ErrorMiddleware } from './middlewares/error';
+import { requestLogger } from './middlewares/requestLogger';
+import { apiVersioning } from './middlewares/apiVersioning';
 import routes from './routes';
+import { swaggerSpec } from './config/swagger.config';
 
-
-
-
+export const app = express();
 
 // Professional middleware stack
 app.use(helmet());
@@ -37,21 +32,32 @@ app.use(cors({
 app.use(requestLogger);
 app.use(apiVersioning);
 
-// Setup Swagger documentation
-setupSwagger(app);
+// Swagger Documentation Setup
+const swaggerOptions = {
+  customCss: `
+    .swagger-ui .topbar { display: none }
+    .swagger-ui .info .title { color: #2c3e50; font-size: 36px; }
+    .swagger-ui .scheme-container { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+    .swagger-ui .info .description { font-size: 16px; line-height: 1.6; }
+  `,
+  customSiteTitle: 'KidsClub API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    tryItOutEnabled: true,
+  }
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+app.get('/api-docs.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Professional route organization
 app.use('/', routes);
-
-// Legacy test endpoint (will be moved to health checks)
-app.get('/test', (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({
-        success: true,
-        message: "KidsClub API is operational",
-        version: "1.0.0",
-        timestamp: new Date().toISOString()
-    });
-});
 
 // unknown route 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {

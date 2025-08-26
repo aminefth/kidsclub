@@ -10,6 +10,11 @@ import adsRoutes from './ads.route';
 import analyticsRoutes from './analytics.route';
 import healthRoutes from './health.route';
 
+// Import new documented routes
+import authRoutes from './auth.routes';
+import healthRoutesDocumented from './health.routes';
+import blogRoutesDocumented from './blog.routes.documented';
+
 const router = express.Router();
 
 /**
@@ -46,5 +51,9 @@ router.use('/api/v1', notificationRoutes);
 router.use('/api/v1', adsRoutes);
 router.use('/api/v1/comments', commentRoutes);
 router.use('/api/v1/analytics', analyticsRoutes);
+
+// Import Swagger documentation routes for OpenAPI spec
+import swaggerRoutes from './swagger.routes';
+router.use('/', swaggerRoutes);
 
 export default router;

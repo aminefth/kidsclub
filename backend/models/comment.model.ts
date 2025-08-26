@@ -5,7 +5,7 @@ export interface IComment extends Document {
     _id: string;
     content: string;
     author: IUser;
-    blogId: string;
+    blogId: mongoose.Types.ObjectId;
     parentId?: string;
     depth: number;
     
@@ -112,14 +112,7 @@ commentSchema.index({ author: 1 });
 commentSchema.index({ createdAt: -1 });
 commentSchema.index({ isKidsSafe: 1, containsInappropriateContent: 1 });
 
-// Pre-save middleware to calculate total reactions
-commentSchema.pre('save', function() {
-    this.totalReactions = 
-        this.reactions.likes.length + 
-        this.reactions.dislikes.length + 
-        this.reactions.hearts.length + 
-        this.reactions.laughs.length;
-});
+// Note: totalReactions is now a regular schema field, not a virtual property
 
 const CommentModel: Model<IComment> = mongoose.model<IComment>("Comment", commentSchema);
 

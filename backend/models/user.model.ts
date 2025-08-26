@@ -18,8 +18,6 @@ let profile_imgs_collections_list =
     ["notionists-neutral", "adventurer-neutral", "fun-emoji"];
 
 export interface IUser extends Document {
-
-
     name: string;
     email: string;
     password: string;
@@ -29,6 +27,7 @@ export interface IUser extends Document {
     country: string;
     bio: string;
     role: string;
+    status: string;
     isVerified: boolean;
     isBanned: boolean;
     isSuspended: boolean;
@@ -47,10 +46,18 @@ export interface IUser extends Document {
         total_reads: number;
     },
     google_auth: boolean;
-
+    interests: string[];
+    socialLinks: {
+        website?: string;
+        twitter?: string;
+        linkedin?: string;
+        github?: string;
+    };
+    lastActive: Date;
     blogs: Schema.Types.ObjectId[];
-
     joinedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
     comparePassword: (password: string) => Promise<boolean>;
     SignAccessToken: () => string;
     SignRefreshToken: () => string;
@@ -122,6 +129,11 @@ const userSchema = new Schema<IUser>({
         type: String,
         enum: ["admin", "user", "moderator", "author"],
         default: "user",
+    },
+    status: {
+        type: String,
+        enum: ["active", "inactive", "suspended", "banned"],
+        default: "active",
     },
     isVerified: {
         type: Boolean,
@@ -212,27 +224,49 @@ const userSchema = new Schema<IUser>({
         type: [Schema.Types.ObjectId],
         ref: 'blog',
         default: [],
+    },
+    interests: {
+        type: [String],
+        default: [],
+        maxlength: 10,
+    },
+    socialLinks: {
+        website: {
+            type: String,
+            trim: true,
+        },
+        twitter: {
+            type: String,
+            trim: true,
+        },
+        linkedin: {
+            type: String,
+            trim: true,
+        },
+        github: {
+            type: String,
+            trim: true,
+        }
+    },
+    lastActive: {
+        type: Date,
+        default: Date.now,
     }
-
-
-
-
-
 }, { timestamps: true });
 
 // sign access token
 userSchema.methods.SignAccessToken = function () {
-    const secret = process.env.ACCESS_TOKEN || '';
+    const secret = process.env.ACCESS_TOKEN as string;
     return jwt.sign({ id: this._id }, secret, {
-        expiresIn: process.env.JWT_EXPIRES_IN_ACCESS_MINUTES || "5m",
+        expiresIn: "5m",
     });
 };
 
 // Sign refresh token
 userSchema.methods.SignRefreshToken = function () {
-    const secret = process.env.REFRESH_TOKEN || '';
+    const secret = process.env.REFRESH_TOKEN as string;
     return jwt.sign({ id: this._id }, secret, {
-        expiresIn: process.env.JWT_EXPIRES_IN_REFRESH_MINUTES || "7d",
+        expiresIn: "7d",
     });
 }
 

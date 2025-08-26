@@ -1,5 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 
+// Extend Request interface to include apiVersion
+declare global {
+  namespace Express {
+    interface Request {
+      apiVersion: string;
+    }
+  }
+}
+
 /**
  * API Versioning middleware for professional version management
  */
@@ -14,14 +23,14 @@ export const apiVersioning = (req: Request, res: Response, next: NextFunction) =
   
   if (!version && acceptHeader) {
     const versionMatch = acceptHeader.match(/application\/vnd\.kidsclub\.v(\d+)/);
-    version = versionMatch?.[1];
+    version = versionMatch?.[1] || '1';
   }
   
   // Default to v1 if no version specified
   version = version || '1';
   
   // Add version info to request object
-  (req as any).apiVersion = version as string;
+  req.apiVersion = version || 'v1';
   
   // Add version info to response headers
   res.setHeader('API-Version', version);

@@ -107,7 +107,7 @@ export const createBlog = catchAsyncErrors(
 
                 const user = await userModel.findByIdAndUpdate({ _id: authorId }, { $inc: { "account_info.total_posts": incrementVal }, $push: { blogs: blog._id } });
 
-                await redis.set(authorId, JSON.stringify(user));
+                await redis.set(authorId as string, JSON.stringify(user));
             }
 
 
@@ -195,7 +195,7 @@ export const editBlog = catchAsyncErrors(
 
                 const user = await userModel.findByIdAndUpdate({ _id: authorId }, { $inc: { "account_info.total_posts": incrementVal }, $push: { blogs: updatedBlog._id } });
 
-                await redis.set(authorId, JSON.stringify(user));
+                await redis.set(authorId as string, JSON.stringify(user));
                 res.status(200).json({
                     success: true,
                     message: "Blog updated successfully",
@@ -219,7 +219,7 @@ export const getSingleBlog = catchAsyncErrors(
 
             const cachedBlog = await redis.get(id);
             if (cachedBlog) {
-                const blog = JSON.parse(cachedBlog);
+                const blog = JSON.parse(cachedBlog as string);
                 return res.status(201).json({
                     success: true,
                     message: "Blog found",
@@ -232,7 +232,7 @@ export const getSingleBlog = catchAsyncErrors(
                 }
                 if (!blog) return next(new ErrorHandler(`Blog not found `, 404));
                 // with 1dys to expire and refresh
-                await redis.set(id, JSON.stringify(blog), "EX", 86400);
+                await redis.setex(id, 86400, JSON.stringify(blog));
 
                 res.status(200).json({
                     success: true,
@@ -254,7 +254,7 @@ export const getAllBlogs = catchAsyncErrors(
             // caching with redis strategy
             const cachedBlogs = await redis.get("allBlogs");
             if (cachedBlogs) {
-                const blogs = JSON.parse(cachedBlogs);
+                const blogs = JSON.parse(cachedBlogs as string);
                 return res.status(201).json({
                     success: true,
                     message: "Blogs found",
@@ -267,7 +267,7 @@ export const getAllBlogs = catchAsyncErrors(
                         false
                 });
                 // add to cache with 1 day to expire 
-                await redis.set("allBlogs", JSON.stringify(allBlogs), "EX", 86400);
+                await redis.setex("allBlogs", 86400, JSON.stringify(allBlogs));
                 res.status(200).json({
                     success: true,
                     message: "Blogs found",
@@ -592,7 +592,7 @@ export const addReviewReply = catchAsyncErrors(
                 return next(new ErrorHandler(`Review not found`, 404));
             }
 
-            if (user._id === blog.author.toString() && user.role === ("author" || "admin")) {
+            if (user._id === blog.author.toString() && (user.role === "author" || user.role === "admin")) {
 
 
                 const replyData: any = {
