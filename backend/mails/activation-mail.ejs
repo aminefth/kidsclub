@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Pareto Hub</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; font-family: 'Noto Sans', 'Helvetica', 'Arial', sans-serif; background-color: #ececec;">
+    <table cellpadding="0" cellspacing="0" border="0" align="center" height="100%" width="100%"
+        style="height: 100%; width: 100%; padding: 20px;" bgcolor="#ECECEC">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" align="center" width="100%" style="max-width: 580px;"
+                    bgcolor="#ffffff">
+                    <tr bgcolor="##010101">
+                        <td>
+                            <a href="#m_7592892073543078336_" style="display: block;">
+                                <img src="https://res.cloudinary.com/dvlxylj7r/image/upload/v1704224694/rbg0tkbzpcydqwtg1ryh.png"
+                                    alt="Pareto Hub" title="Pareto Hub"
+                                    style="display: block; border: 0px; width: 200px; height: auto; margin: auto;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr bgcolor="#010101" height="7">
+                        <td>
+                            <span
+                                style="display: block; text-align: center; color: white; text-decoration: none; line-height: 28px; font-size: 23px; font-weight: 400; margin: 10px 30px 0px;">
+
+                                Welcome to Pareto Hub
+                            </span>
+                        </td>
+                    </tr>
+                    <tr bgcolor="#ffffff" height="15">
+                        <td>
+                            <span
+                                style="display: block; text-align: center; color: #fff; text-decoration: none; line-height: 15px;">&nbsp;</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom: 1px solid #e2e5e6;" bgcolor="#FFFFFF">
+                            <table style="padding: 20px 30px;" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td>
+                                        <p
+                                            style="color: #010101; font-size: 15px; line-height: 28px; font-weight: 400; display: block; text-decoration: none;">
+                                            <br>
+                                            Hello, <span style="color: #246df7;">
+                                                <%= user.name %>,
+                                            </span> <br>
+                                            Thank you for registering with Pareto Hub. Please use the following
+                                            code to activate your account: <br>
+                                        <div style="display: flex; color: #e2e5e6; justify-content: center;">
+                                            <h2 style="background-color: #010101; padding: 2rem;">
+                                                <%= activationCode %>
+                                            </h2>
+                                        </div><br>
+                                        Please be aware that the activation code will expire after 5 minutes,
+                                        so we recommend using it as soon as possible. <br><br>
+                                        If you did not initiate the registration process for a Pareto Hub
+                                        account, please ignore this message. <br>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr bgcolor="#010101" height="1">
+                        <td>
+                            <span
+                                style="display: block; text-align: center; color: #fff; text-decoration: none; line-height: 30px; height: 1px; background: #f5f5f5; display: block;">
+                                &nbsp;
+                            </span>
+                        </td>
+                    </tr>
+                    <tr bgcolor="#010101" height="30">
+                        <td>
+                            <p
+                                style="margin-bottom: 0px; padding: 15px 20px 0px; display: block; font-size: 12px; color: #d4cbcb; text-align: center;">
+                                If you have any questions or need assistance, contact us at
+                                <a href="mailto:contact@paretohub.com"
+                                    style="display: inline-block; text-align: center; color: rgb(223, 201, 131)bcb; text-decoration: underline; line-height: 30px; padding: 0px 5px 0px; font-size: 12px;"
+                                    target="_blank"> contact@paretohub.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr bgcolor="#010101" height="30">
+                        <td>
+                            <span
+                                style="display: block; text-align: center; color: #d4cbcb; text-decoration: none; line-height: 30px; padding: 20px 20px 30px; display: block; font-size: 13px;">
+                                An email has been sent to <a style="color: white;" target="_blank">
+                                    <%= user.email %>
+                                </a><br>
+                                Copyright © Pareto Hub
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
